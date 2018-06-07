@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package protobuff;
+
+service AccountServices {
+    rpc AddMoneyToAccount(Account) returns (Account) {}
+    rpc GetAccount(RequestAccountDetails) returns (Account) {}
+    rpc CreateAccount(AccountId) returns (Account) {}
+}
+
+
+message Account {
+  string accountId = 1;
+  float amount = 2;
+}
+
+message RequestAccountDetails {
+  string accountId = 1;
+}
+
+message AccountId {
+    string accountId = 1;
+}
