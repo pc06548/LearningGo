@@ -15,18 +15,16 @@ import (
 )
 
 var (
-	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
+	tls                = flag.Bool("tls", true, "Connection uses TLS if true, else plain TCP")
+	caFile             = flag.String("ca_file", "server.crt", "The file containning the CA root cert file")
 	serverAddr         = flag.String("server_addr", "127.0.0.1:10000", "The server address in the format of host:port")
-	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
+	serverHostOverride = flag.String("server_host_override", "a", "The server name use to verify the hostname returned by TLS handshake")
 )
 
-func createAccount(client pb.AccountServicesClient, accountId pb.AccountId) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func createAccount(client pb.AccountServicesClient, accountId pb.AccountId, ctx context.Context) {
 	createdAccount, err := client.CreateAccount(ctx, &accountId)
 	if err != nil {
-		log.Println("%v.GetFeatures(_) = _, %v: ", client, err)
+		log.Println("Account Creation error: %v.GetFeatures(_) = _, %v: ", client, err)
 	} else {
 		log.Println("Account created: ", createdAccount)
 	}
@@ -34,11 +32,7 @@ func createAccount(client pb.AccountServicesClient, accountId pb.AccountId) {
 
 
 func main() {
-	go execute()
-	go execute()
-	go execute()
-	go execute()
-	go execute()
+	execute()
 }
 
 func execute() {
@@ -62,9 +56,21 @@ func execute() {
 	}
 	defer conn.Close()
 	client := pb.NewAccountServicesClient(conn)
-	s1 := rand.NewSource(100)
+	s1 := rand.NewSource(10)
 	r1 := rand.New(s1)
-	for i := 0; i < 100; i++ {
-		createAccount(client, pb.AccountId{AccountId: strconv.Itoa(r1.Intn(100))})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	for i := 0; i < 10; i++ {
+		createAccount(client, pb.AccountId{AccountId: strconv.Itoa(r1.Intn(10))}, ctx)
 	}
+
+	/*for i := 0; i < 10; i++ {
+		account, err := client.GetAccount(ctx, &pb.RequestAccountDetails{AccountId: strconv.Itoa(i)})
+		if err == nil {
+			log.Println("Reading account info for: ", account.AccountId, ". Balance is: ", account.Amount)
+		} else {
+			log.Println("Account reading error: %v.GetFeatures(_) = _, %v: ", client, err)
+		}
+	}*/
 }

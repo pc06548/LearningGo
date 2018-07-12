@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/testdata"
 	"google.golang.org/grpc/credentials"
 	pb "LearningGo/GoGrpcDemo/protobuff"
+	"time"
 )
 
 type AccountServicesServer struct {
@@ -72,9 +73,9 @@ func (server *AccountServicesServer) CreateAccount(ctx context.Context, accountI
 }
 
 var (
-	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	certFile   = flag.String("cert_file", "", "The TLS cert file")
-	keyFile    = flag.String("key_file", "", "The TLS key file")
+	tls        = flag.Bool("tls", true, "Connection uses TLS if true, else plain TCP")
+	certFile   = flag.String("cert_file", "server.crt", "The TLS cert file")
+	keyFile    = flag.String("key_file", "server.key", "The TLS key file")
 	jsonDBFile = flag.String("json_db_file", "testdata/route_guide_db.json", "A json file containing a list of features")
 	port       = flag.Int("port", 10000, "The server port")
 )
@@ -98,10 +99,31 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to generate credentials %v", err)
 		}
+		fmt.Println("initializing ",len(opts))
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
+	opts = append(opts,  grpc.UnaryInterceptor(serverLoggingUnaryInterceptor))
 	grpcServer := grpc.NewServer(opts...)
 	aa := AccountServicesServer{}
 	pb.RegisterAccountServicesServer(grpcServer, &aa)
 	grpcServer.Serve(lis)
+}
+
+
+func serverLoggingUnaryInterceptor(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+
+	start := time.Now()
+
+	h, err := handler(ctx, req)
+
+	//logging
+	log.Printf("request - Method:%s\tDuration:%s\tError:%v\n",
+		info.FullMethod,
+		time.Since(start),
+		err)
+
+	return h, err
 }

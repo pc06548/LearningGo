@@ -10,3 +10,8 @@ func Format() {
 	fmt.Println(foo)
 	format()
 }
+
+
+func Sum (x int, y int) int{
+	return x + y
+}
