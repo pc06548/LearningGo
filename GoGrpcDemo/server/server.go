@@ -73,7 +73,7 @@ func (server *AccountServicesServer) CreateAccount(ctx context.Context, accountI
 }
 
 var (
-	tls        = flag.Bool("tls", true, "Connection uses TLS if true, else plain TCP")
+	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	certFile   = flag.String("cert_file", "server.crt", "The TLS cert file")
 	keyFile    = flag.String("key_file", "server.key", "The TLS key file")
 	jsonDBFile = flag.String("json_db_file", "testdata/route_guide_db.json", "A json file containing a list of features")
@@ -83,7 +83,7 @@ var (
 
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
