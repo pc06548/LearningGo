@@ -59,24 +59,3 @@ func TestStringConv(t *testing.T) {
 	bytes = StringToByte(v)
 	assert.Equal(t, v, ByteToString(bytes))
 }
-
-type Config struct {
-	s *Service
-}
-
-
-Third party Service looks something like this
-type Service struct {
-}
-func NewService(...) (*Service) {
-s := &Service{}
-… // do some instantiation
-return s;
-}
-func (s *Service) Operation(…) {
-…
-}
-
-func NewConfig() {
-
-}
